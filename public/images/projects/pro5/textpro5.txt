@@ -1,0 +1,1 @@
+Entwicklung einer intelligenten Steuerungssoftware für 3D-Drucker mit automatischer Kalibrierung und Qualitätsoptimierung. Das System analysiert Druckparameter in Echtzeit und passt diese automatisch an, um die Druckqualität zu verbessern. Features: Temperaturregelung, Geschwindigkeitsoptimierung, Materialfluss-Kompensation. 

@@ -1,0 +1,1 @@
+Entwicklung eines IoT-basierten Smart Home Systems mit automatischer Klimasteuerung, Beleuchtungsoptimierung und Energiemanagement. Das System nutzt Machine Learning zur Vorhersage des Nutzerverhaltens und optimiert den Energieverbrauch entsprechend. Hardware: Raspberry Pi, Sensoren, Aktoren. Software: Python, MQTT, TensorFlow. 

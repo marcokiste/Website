@@ -11,16 +11,37 @@ export default function Home() {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [showProjects, setShowProjects] = useState(false);
   const [showProjectsLoading, setShowProjectsLoading] = useState(false);
+  const [showPauseScreen, setShowPauseScreen] = useState(false);
   
   const fullText = `
+
+
+
+
+
 
 
 
               --- SCROLL DOWN ---
 
 
-NAME: Marc Kisters
-STATUS:: Student at Friedrich-Alexander-University
+
+
+
+
+
+NAME                           - MARC KISTERS -
+STATUS                       - STUDENT AT FAU -
+
+SKILLS
+-----------------------------------------------
+[OFFICE]                         ████████░░ 80%
+[FEM]                            █████░░░░░ 50%
+[CAD]                            █████████░ 90%
+[CODING]                         ████░░░░░░ 40%
+[CREATIVITY]                     █████████░ 90%
+[DEXTERITY]                      █████████░ 90%
+
 
 
               --- ABOUT ME ---
@@ -30,30 +51,21 @@ STATUS:: Student at Friedrich-Alexander-University
   I have a strong visual and spatial imagination, which helps me turn ideas into reality, especially when it comes to construction and technical problem-solving. Whether on a board or at the workbench, I'm always in motion—creating, exploring, and pushing boundaries!"
 
 
-        --- PRESS <P> FOR PROJECT DATA ---
 
-1. Projekt Alpha - Webbasierte KI-Anwendung
-2. Projekt Beta - Cloud-Native Microservices
-3. Projekt Gamma - React Native Mobile App
+
+          <PRESS ME TO SEE PROJECTS>
 
 
 
 
+CONTACT DETAILS
+-----------------------------------------------
+EMAIL               MARC.KISTERS.STUD@GMAIL.COM
+PHONE NUMBER                    +49 178 2047592
+INSTAGRAM                          MARC.KISTERS
 
 
---------------------------
 
-[JavaScript] ████████░░ 80%
-[React.js]   ███████░░░ 70%
-[Node.js]    ████████░░ 80%
-[Python]     ██████░░░░ 60%
-[Docker]     ███████░░░ 70%
-
-PRESS <P> TO SEE TO SEE PROJECTS DETAILS:
---------
-
-
-> SYSTEM BEREIT...
 `;
 
   useEffect(() => {
@@ -61,13 +73,6 @@ PRESS <P> TO SEE TO SEE PROJECTS DETAILS:
       if (event.key === 'Enter' && !showContent && !isInitializing) {
         setIsInitializing(true);
         startInitialization();
-      }
-      if (event.key.toLowerCase() === 'p' && showContent) {
-        setShowProjectsLoading(true);
-        setTimeout(() => {
-          setShowProjectsLoading(false);
-          setShowProjects(true);
-        }, 500);
       }
       if (event.key === 'Escape' && showProjects) {
         setShowProjects(false);
@@ -106,18 +111,45 @@ PRESS <P> TO SEE TO SEE PROJECTS DETAILS:
 
   useEffect(() => {
     if (showContent) {
-      let currentIndex = 0;
-      const interval = setInterval(() => {
-        if (currentIndex < fullText.length) {
-          setText(fullText.slice(0, currentIndex + 2));
-          currentIndex += 5;
-        } else {
-          clearInterval(interval);
-        }
-      }, 20);
-      return () => clearInterval(interval);
+      setText(fullText);
     }
-  }, [showContent]);
+  }, [showContent, fullText]);
+
+  const renderTextWithLinks = (textToRender: string) => {
+    const parts = textToRender.split(/(<PRESS ME TO SEE PROJECTS>|\(FAU\))/g);
+    return parts.map((part, index) => {
+      if (part === '(FAU)') {
+        return (
+          <span
+            key={index}
+            className="underline hover:text-green-300 animate-blink cursor-pointer"
+            onClick={() => window.open('https://www.fau.de', '_blank', 'noopener,noreferrer')}
+          >
+            (FAU)
+          </span>
+        );
+      }
+      if (part === '<PRESS ME TO SEE PROJECTS>') {
+        return (
+          <span
+            key={index}
+            className="cursor-pointer hover:text-green-300 animate-blink"
+            onClick={() => {
+              playClickSound();
+              setShowProjectsLoading(true);
+              setTimeout(() => {
+                setShowProjectsLoading(false);
+                setShowProjects(true);
+              }, 500);
+            }}
+          >
+            &lt;PRESS ME TO SEE PROJECTS&gt;
+          </span>
+        );
+      }
+      return part;
+    });
+  };
 
   const getLoadingStep = (progress: number) => {
     if (progress < 35) return "INITIALIZING SYSTEM...";
@@ -144,98 +176,157 @@ PRESS <P> TO SEE TO SEE PROJECTS DETAILS:
     );
   };
 
+  // Audio-Objekte für Boot-Sounds
+  let startup0Audio: HTMLAudioElement | null = null;
+  let loopAudio: HTMLAudioElement | null = null;
+
+  function playBootupSequence() {
+    // Stoppe evtl. laufende Audios
+    if (startup0Audio) { startup0Audio.pause(); startup0Audio.currentTime = 0; }
+    if (loopAudio) { loopAudio.pause(); loopAudio.currentTime = 0; }
+    startup0Audio = new window.Audio('/soundeffects/Startup0.mp3');
+    startup0Audio.volume = 0.25;
+    startup0Audio.play();
+    // Überlappung: Starte Loop 0.25s vor Ende von Startup0
+    let startedLoop = false;
+    const tryStartLoop = () => {
+      if (!startup0Audio) return;
+      if (!startedLoop && startup0Audio.duration && startup0Audio.currentTime > 0 && (startup0Audio.duration - startup0Audio.currentTime) < 0.26) {
+        startedLoop = true;
+        playLoop();
+      }
+      if (!startedLoop) requestAnimationFrame(tryStartLoop);
+    };
+    startup0Audio.onplay = () => requestAnimationFrame(tryStartLoop);
+  }
+
+  function playLoop() {
+    if (loopAudio) { loopAudio.pause(); loopAudio.currentTime = 0; }
+    let thisLoop = new window.Audio('/soundeffects/Startuploop.mp3');
+    thisLoop.volume = 0.25;
+    thisLoop.play();
+    loopAudio = thisLoop;
+    let startedNext = false;
+    const tryStartNext = () => {
+      if (!thisLoop) return;
+      if (!startedNext && thisLoop.duration && thisLoop.currentTime > 0 && (thisLoop.duration - thisLoop.currentTime) < 0.26) {
+        startedNext = true;
+        // Starte nächste Instanz und stoppe diese nach Überlappung
+        playLoop();
+        setTimeout(() => {
+          thisLoop.pause();
+          thisLoop.currentTime = 0;
+        }, 300); // 0.3s Überlappung
+      }
+      if (!startedNext) requestAnimationFrame(tryStartNext);
+    };
+    thisLoop.onplay = () => requestAnimationFrame(tryStartNext);
+  }
+
+  // Klicksound-Funktion für UI-Feedback
+  function playClickSound() {
+    const audio = new window.Audio('/soundeffects/mouseclick.mp3');
+    audio.volume = 0.175;
+    audio.currentTime = 0;
+    audio.play();
+  }
+
   return (
     <div className="min-h-screen w-screen bg-black relative">
-      {/* Hintergrundbild */}
-      <div className="fixed inset-0">
-        <Image
-          src="/images/COMP.jpg"
-          alt="Computer Hintergrund"
-          fill
-          style={{
-            objectFit: 'contain',
-            objectPosition: 'top',
-            transform: 'scale(1.2)',
-            transformOrigin: 'top'
-          }}
-          priority
-        />
+      {/* Mobile Blocker */}
+      <div className="md:hidden fixed inset-0 bg-black z-50 flex items-center justify-center p-8">
+        <p className="font-mono text-center text-[#4af626] text-lg animate-pulse">
+          INCOMPATIBLE HARDWARE.
+          <br /><br />
+          PLEASE OPEN WEBSITE ON DESKTOP.
+        </p>
       </div>
 
-      {/* Hauptcontainer */}
-      <div className="min-h-screen w-screen flex items-center justify-center p-8 relative z-10">
-        <div className={`monitor-frame bg-black/80 backdrop-blur-sm w-[90%] max-w-[800px] ${showContent || isInitializing ? 'crt-active' : ''}`}>
-          {(showContent || isInitializing) && <div className="vertical-scan" />}
-          <div className="crt-screen w-full h-[60vh] min-h-[300px] max-h-[600px] relative overflow-hidden">
-            {/* Scanline Effekt */}
-            <div className="scanline" />
-            
-            {/* CRT Glow */}
-            <div className="absolute inset-0 pointer-events-none" />
-            
-            {showProjectsLoading ? (
-              <div className="h-full flex items-center justify-center">
-                <div className="font-mono text-[#4af626]">
-                  <div className="mb-4">LOADING PROJECTS...</div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-[200px] h-6 border-2 border-[#4af626] relative overflow-hidden">
-                      <div className="h-full bg-[#4af626]/30 animate-xpbar" style={{ width: '0%' }} />
+      {/* Desktop Content */}
+      <div className="hidden md:block">
+        {/* Hintergrundbild */}
+        <div className="fixed inset-0">
+          <Image
+            src="/images/COMP.jpg"
+            alt="Computer Hintergrund"
+            fill
+            style={{
+              objectFit: 'contain',
+              objectPosition: 'top',
+              transform: 'scale(1.2)',
+              transformOrigin: 'top'
+            }}
+            priority
+          />
+        </div>
+
+        {/* Hauptcontainer */}
+        <div className="min-h-screen w-screen flex items-center justify-center p-8 relative z-10">
+          <div className={`monitor-frame bg-black/80 backdrop-blur-sm w-[90%] max-w-[800px] ${showContent || isInitializing ? 'crt-active' : ''}`}>
+            {(showContent || isInitializing) && <div className="vertical-scan" />}
+            <div className="crt-screen w-full h-[60vh] min-h-[300px] max-h-[600px] relative overflow-hidden">
+              {/* Scanline Effekt */}
+              <div className="scanline" />
+              
+              {/* CRT Glow */}
+              <div className="absolute inset-0 pointer-events-none" />
+              
+              {showProjectsLoading ? (
+                <div className="h-full flex items-center justify-center">
+                  <div className="font-mono text-[#4af626]">
+                    <div className="mb-4">LOADING PROJECTS...</div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-[200px] h-6 border-2 border-[#4af626] relative overflow-hidden">
+                        <div className="h-full bg-[#4af626]/30 animate-xpbar" style={{ width: '0%' }} />
+                      </div>
                     </div>
+                    <style jsx>{`
+                      @keyframes xpbar {
+                        0% { width: 0%; }
+                        100% { width: 100%; }
+                      }
+                      .animate-xpbar {
+                        animation: xpbar 0.5s linear forwards;
+                      }
+                    `}</style>
                   </div>
-                  <style jsx>{`
-                    @keyframes xpbar {
-                      0% { width: 0%; }
-                      100% { width: 100%; }
-                    }
-                    .animate-xpbar {
-                      animation: xpbar 0.5s linear forwards;
-                    }
-                  `}</style>
                 </div>
-              </div>
-            ) : !showContent && !isInitializing ? (
-              <div className="h-full flex items-center justify-center">
-                <p className="text-[#4af626] font-mono text-xl terminal-text">
-                  TO REBOOT PRESS ENTER...
-                </p>
-              </div>
-            ) : isInitializing ? (
-              <div className="h-full flex items-center justify-center">
-                {renderLoadingBar(loadingProgress)}
-              </div>
-            ) : (
-              <div className="h-full overflow-auto p-[5%]">
-                <pre className="font-mono text-[#4af626] whitespace-pre-wrap terminal-text text-sm">
-                  {text.split('\n').map((line, i) => {
-                    if (line.trim().startsWith('--- PRESS <P> FOR PROJECT DATA ---')) {
-                      return (
-                        <span
-                          key={i}
-                          className="cursor-pointer hover:text-green-300 transition-colors"
-                          onClick={() => {
-                            setShowProjectsLoading(true);
-                            setTimeout(() => {
-                              setShowProjectsLoading(false);
-                              setShowProjects(true);
-                            }, 500);
-                          }}
-                        >
-                          {line}
-                        </span>
-                      );
-                    }
-                    return <span key={i}>{line + '\n'}</span>;
-                  })}
-                  <span className="inline-block w-2 h-4 bg-[#4af626] animate-[blink_1s_step-end_infinite]" />
-                </pre>
-              </div>
-            )}
+              ) : !showContent && !isInitializing && !showPauseScreen ? (
+                <div className="h-full flex items-center justify-center">
+                  <p
+                    className="text-[#4af626] font-mono text-base terminal-text animate-blink cursor-pointer transition-colors hover:text-green-300"
+                    onClick={() => {
+                      playBootupSequence();
+                      setShowPauseScreen(true);
+                      setTimeout(() => {
+                        setShowPauseScreen(false);
+                        setIsInitializing(true);
+                        startInitialization();
+                      }, 1000);
+                    }}
+                  >
+                    PRESS TO BOOT PORTFOLIO...
+                  </p>
+                </div>
+              ) : showPauseScreen ? (
+                <div className="h-full w-full bg-black" />
+              ) : isInitializing ? (
+                <div className="h-full flex items-center justify-center">
+                  {renderLoadingBar(loadingProgress)}
+                </div>
+              ) : (
+                <div className="h-full overflow-y-auto p-4 crt-text-wrapper scrollbar-hide">
+                  <pre className="text-sm md:text-base whitespace-pre-wrap font-mono text-[#4af626]">
+                    {renderTextWithLinks(text)}
+                  </pre>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Projekte Overlay */}
-      {showProjects && <Projects onClose={() => setShowProjects(false)} />}
+        {showProjects && <Projects onClose={() => setShowProjects(false)} />}
+      </div>
     </div>
   );
 } 
