@@ -468,7 +468,10 @@ const Projects: React.FC<ProjectsProps> = ({ onClose }) => {
             <span className="text-[#4af626] font-mono text-xl font-bold tracking-widest">PROJECTS_</span>
             <span
               className="text-[#4af626] font-mono text-lg cursor-pointer hover:text-green-300"
-              onClick={onClose}
+              onClick={() => {
+                playClickSound();
+                onClose();
+              }}
               style={{userSelect: 'none'}}
             >ESC&gt;</span>
           </div>
